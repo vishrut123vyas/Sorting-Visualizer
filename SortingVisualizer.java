@@ -1,3 +1,5 @@
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.Random;
@@ -9,6 +11,7 @@ public class SortingVisualizer extends JPanel {
     private static final int MAX_ELEMENTS = WIDTH / 2;
     private static final int MIN_ELEMENTS = 10;
     private int delay = 50;
+    private int activeIndex = -1;  // Active bar index
 
     public SortingVisualizer() {
         this.array = generateRandomArray(WIDTH / 5);
@@ -24,19 +27,21 @@ public class SortingVisualizer extends JPanel {
         return array;
     }
 
-    
     public void bubbleSort() {
         for (int i = 0; i < array.length - 1; i++) {
             for (int j = 0; j < array.length - i - 1; j++) {
+                activeIndex = j;
                 if (array[j] > array[j + 1]) {
                     int temp = array[j];
                     array[j] = array[j + 1];
                     array[j + 1] = temp;
-                    repaint();
-                    sleep();
                 }
+                repaint();
+                sleep();
             }
         }
+        activeIndex = -1;
+        repaint();
     }
 
     public void insertionSort() {
@@ -44,24 +49,31 @@ public class SortingVisualizer extends JPanel {
             int key = array[i];
             int j = i - 1;
             while (j >= 0 && array[j] > key) {
+                activeIndex = j;
                 array[j + 1] = array[j];
-                j = j - 1;
+                j--;
                 repaint();
                 sleep();
             }
             array[j + 1] = key;
+            activeIndex = j + 1;
             repaint();
             sleep();
         }
+        activeIndex = -1;
+        repaint();
     }
 
     public void selectionSort() {
         for (int i = 0; i < array.length - 1; i++) {
             int minIndex = i;
             for (int j = i + 1; j < array.length; j++) {
+                activeIndex = j;
                 if (array[j] < array[minIndex]) {
                     minIndex = j;
                 }
+                repaint();
+                sleep();
             }
             int temp = array[i];
             array[i] = array[minIndex];
@@ -69,10 +81,14 @@ public class SortingVisualizer extends JPanel {
             repaint();
             sleep();
         }
+        activeIndex = -1;
+        repaint();
     }
 
     public void mergeSort() {
         mergeSortHelper(array, 0, array.length - 1);
+        activeIndex = -1;
+        repaint();
     }
 
     private void mergeSortHelper(int[] array, int left, int right) {
@@ -96,6 +112,7 @@ public class SortingVisualizer extends JPanel {
 
         int i = 0, j = 0, k = left;
         while (i < n1 && j < n2) {
+            activeIndex = k;
             if (leftArray[i] <= rightArray[j]) {
                 array[k] = leftArray[i];
                 i++;
@@ -109,17 +126,15 @@ public class SortingVisualizer extends JPanel {
         }
 
         while (i < n1) {
-            array[k] = leftArray[i];
-            i++;
-            k++;
+            activeIndex = k;
+            array[k++] = leftArray[i++];
             repaint();
             sleep();
         }
 
         while (j < n2) {
-            array[k] = rightArray[j];
-            j++;
-            k++;
+            activeIndex = k;
+            array[k++] = rightArray[j++];
             repaint();
             sleep();
         }
@@ -127,6 +142,8 @@ public class SortingVisualizer extends JPanel {
 
     public void quickSort() {
         quickSortHelper(array, 0, array.length - 1);
+        activeIndex = -1;
+        repaint();
     }
 
     private void quickSortHelper(int[] array, int low, int high) {
@@ -141,12 +158,15 @@ public class SortingVisualizer extends JPanel {
         int pivot = array[high];
         int i = low - 1;
         for (int j = low; j < high; j++) {
+            activeIndex = j;
             if (array[j] < pivot) {
                 i++;
                 int temp = array[i];
                 array[i] = array[j];
                 array[j] = temp;
             }
+            repaint();
+            sleep();
         }
         int temp = array[i + 1];
         array[i + 1] = array[high];
@@ -169,7 +189,11 @@ public class SortingVisualizer extends JPanel {
         super.paintComponent(g);
         int barWidth = getWidth() / array.length;
         for (int i = 0; i < array.length; i++) {
-            g.setColor(new Color(100, 149, 237));  // Cornflower Blue
+            if (i == activeIndex) {
+                g.setColor(Color.GREEN);
+            } else {
+                g.setColor(new Color(100, 149, 237));
+            }
             g.fillRect(i * barWidth, getHeight() - array[i], barWidth, array[i]);
         }
     }
@@ -196,7 +220,7 @@ public class SortingVisualizer extends JPanel {
 
         JPanel controls = new JPanel();
         controls.setLayout(new FlowLayout());
-        controls.setBackground(new Color(52, 73, 94));  // Dark Blue
+        controls.setBackground(new Color(52, 73, 94));
         controls.setPreferredSize(new Dimension(WIDTH, 60));
 
         String[] sortingAlgorithms = {"Bubble Sort", "Insertion Sort", "Selection Sort", "Merge Sort", "Quick Sort"};
@@ -227,7 +251,7 @@ public class SortingVisualizer extends JPanel {
         sizeSlider.setForeground(Color.WHITE);
         sizeSlider.addChangeListener(e -> visualizer.setNumberOfElements(sizeSlider.getValue()));
 
-        JSlider speedSlider = new JSlider(1, 99, 50);  // Slower at left, faster at right
+        JSlider speedSlider = new JSlider(1, 99, 50);
         speedSlider.setBackground(new Color(52, 73, 94));
         speedSlider.setForeground(Color.PINK);
         speedSlider.addChangeListener(e -> visualizer.delay = 100 - speedSlider.getValue());
